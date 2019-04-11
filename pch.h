@@ -8,7 +8,9 @@
 
 #ifndef PCH_H
 #define PCH_H
-
+#include "Seesaw.h"
+#include "Person.h"
+#include "Semaphore.h"
 // TODO: add headers that you want to pre-compile here
 
 #endif //PCH_H

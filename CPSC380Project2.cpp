@@ -2,13 +2,13 @@
 //
 
 #include "pch.h"
-#include <iostream>
 
-using namespace std;
 
 int main()
 {
-    //seasaw simulator
+	Person *fred = new Person("Fred", 1);
+	Person *wilma = new Person("Wilma", 1.5);
+	Seesaw *seesaw = new Seesaw(fred,wilma,7,1);
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
