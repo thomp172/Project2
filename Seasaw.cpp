@@ -5,7 +5,7 @@ Seesaw::Seesaw()
 {
 	Person* A = new Person("Jane", 1);
 	Person* B = new Person("John", 2);
-	max = 10;
+	max = 5;
 	min = 0;
 	init();
 }
@@ -23,98 +23,95 @@ void Seesaw::init()
 	//semaphore
 	semA = new Semaphore(1);
 	semB = new Semaphore(1);
+	semC = new Semaphore(1);
+	length = max - min;
 	tick = 0;
-	calculate(A);
-	calculate(B);
+	count = 0;
+	int time1 = calculate(A, min);
+	int time2 = calculate(B,max);
+	count = (time1 + time2) * 10;
 	//thread creation
-	for (int i = 0; i < 10; i++)
+	locA = min;
+	locB = max;
+	int j, k;
+	again = true;
+	/*thread thrT = thread(&Seesaw::time, this);
+	thrT.join();*/
+	for (int i=0; i<10; i++)//repeat 10 times
 	{
-		thread thrA = thread(&Seesaw::turnA, this, tick);
-		thread thrB = thread(&Seesaw::turnB, this, tick);
-		tick = time();
+		thread thrA = thread(&Seesaw::turnA, this, time1);
 		thrA.join();
+		thread thrB = thread(&Seesaw::turnB, this, time2);
 		thrB.join();
 	}
+	again = false;
 }
 
-void Seesaw::calculate(Person *person)
+double Seesaw::calculate(Person *person, double c)
 {
-	double a, b, c;
-	double time1, time2, timeFinal;
-	a = (-1) * GRAVITY / 2;
-	b = (-1) * person->getSpeed();
-	c = max - min; //top height
-	time1 = (-b + sqrt(pow(b, 2) - (4 * a * c))) / (2 * a);
-	time2 = (-b - sqrt(pow(b, 2) - (4 * a * c))) / (2 * a);
-	if ((time1 > 0) && (time1 < time2))
-		timeFinal = time1;
-	else if (time2 > 0)
-		timeFinal = time2;
-	else
-	{
-		cout << "Time error" << endl;
-		exit(0);
-	}
+	double time;
+	time = length/person->getSpeed();
 	//person reaches max height at timeFinal
-	cout << person->getName() << " reaches max height at " << timeFinal << " seconds." << endl;
-
+	cout << person->getName() << " reaches max height at " << time << " seconds." << endl;
+	return time;
 }
 
 //threads
-void Seesaw::turnA(double t)
+void Seesaw::turnA(double time1)
 {
 	semA->wait();
-	//Fred begins at 1 ft
-	turnAMotion(true, t);
-	turnAMotion(false, t);
+	for (int j = 0; j < (2 * time1); j++)
+	{
+		turnAMotion(true, j);
+		cout << A->getName() << "(d=" << locA << ",t=" << tick << ")" << endl;
+		cout << B->getName() << "(d=" << locB << ",t=" << tick << ")" << endl;
+		tick++;
+	}
 	semA->signal();
 }
-void Seesaw::turnB(double t)
+void Seesaw::turnB(double time2)
 {
 	semA->wait();
-	//Wilma begins at 7ft
-	turnBMotion(false, t);
-	turnBMotion(true, t);
-
+	for (int j = 0; j < (2 * time2); j++)
+	{
+		turnBMotion(true, j);
+		cout << A->getName() << "(d=" << locA << ",t=" << tick << ")" << endl;
+		cout << B->getName() << "(d=" << locB << ",t=" << tick << ")" << endl;
+		tick++;
+	}
 	semA->signal();
 }
 
-double Seesaw::time()
+void Seesaw::time()
 {
-	semB->wait();
-	cout << A->getName() << "(d=" << locA << ",t=" << tick << ")" << endl;
-	cout << B->getName() << "(d=" << locB << ",t=" << tick << ")" << endl;
-	Sleep(1000);
-	tick++;
-	semB->signal();
-	return tick;
+	while (again = true)
+	{
+		semC->wait();
+		cout << A->getName() << "(d=" << locA << ",t=" << tick << ")" << endl;
+		cout << B->getName() << "(d=" << locB << ",t=" << tick << ")" << endl;
+		Sleep(1000);
+		tick++;
+		semC->signal();
+	}
 }
 void Seesaw::turnAMotion(bool up, double t)
 {
 	double a, b, dis, disNew;
 	int round;
-	a = A->getSpeed();
-	b = GRAVITY / 2;
-	dis = a * t + (b * pow(t, 2)) - min;
-	if (up == false)
-	{
-		a = (-1) * a;
-		b = (-1) * b;
-		dis = max + a * t + (b * pow(t, 2));
-	}
-	if ((dis >= min) && (dis <= max))
+	dis = A->getSpeed() * t;
+	if ((dis >= 0) && (dis <= length))
 	{
 		disNew = dis;
 	}
-	else if (dis > max)
+	else if (dis > length)
 	{
 		round = (int)dis;
-		disNew = max - (round % max);
+		disNew = length - (round % length);
 	}
-	else if (dis < min)
+	else if (dis < 0)
 	{
 		round = (int)dis;
-		disNew = min + abs(round % max);
+		disNew = abs(round % length);
 	}
 	locA = disNew + min;
 	locB = max - disNew;
@@ -125,28 +122,20 @@ void Seesaw::turnBMotion(bool up, double t)
 	//Wilma begins at 7 ft
 	double a, b, dis, disNew;
 	int round;
-	a = B->getSpeed();
-	b = GRAVITY / 2;
-	dis = a * t + (b * pow(t, 2)) - min;
-	if (up == false)
-	{
-		a = (-1) * a;
-		b = (-1) * b;
-		dis = max + a * t + (b * pow(t, 2));
-	}
-	if ((dis >= min) && (dis <= max))
+	dis = B->getSpeed() * t;
+	if ((dis >= 0) && (dis <= length))
 	{
 		disNew = dis;
 	}
-	else if (dis > max)
+	else if (dis > length)
 	{
 		round = (int)dis;
-		disNew = max - (round % max);
+		disNew = length - (round % length);
 	}
-	else if (dis < min)
+	else if (dis < 0)
 	{
 		round = (int)dis;
-		disNew = min + abs(round % max);
+		disNew = abs(round % length);
 	}
 	//cout << B->getName() << "(d=" << disNew << ",t=" << tick << ")" << endl;
 	locB = disNew + min;
