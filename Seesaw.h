@@ -16,15 +16,25 @@ public:
 	Seesaw(Person* theA, Person* theB, double theMax, double theMin);
 	void init();
 private:
-	const double START = 0;
-	const double GRAVITY = -9.8;
-
+	const double GRAVITY = 32.1522; //ft/sec
+	
 	Person* A;
 	Person* B;
-	double max;
-	double min;
-	Semaphore *sem;
+	int max;
+	int min;
+	double tick;
+	double locA;
+	double locB;
+	Semaphore *semA;
+	Semaphore *semB;
 
 	//threads
-	void turn(Person* person);
+	void turnA(double t);
+	void turnB(double t);
+	
+	void calculate(Person *person);
+	void turnAMotion(bool up, double t);
+	void turnBMotion(bool up, double t);
+
+	double time();
 };
