@@ -30,15 +30,14 @@ private:
 	Semaphore *semB;
 	Semaphore *semC;
 	int count;
-	bool again;
+	bool control;
 
 	//threads
 	void turnA(double t);
 	void turnB(double t);
 	
 	double calculate(Person *person, double c);
-	void turnAMotion(bool up, double t);
-	void turnBMotion(bool up, double t);
-
-	void time();
+	double motion(Person* person, double t);
+	void movement(Person* person, double t);
+	void output();
 };
