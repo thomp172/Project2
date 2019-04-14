@@ -7,14 +7,12 @@
 #include <Windows.h>
 #include <string>
 
-#define MAX_SEM_COUNT 2
-#define THREADCOUNT 2
 class Seesaw
 {
 public:
 	Seesaw(); // default constructor
 	Seesaw(Person* theA, Person* theB, double theMax, double theMin);
-	void init();
+	~Seesaw();
 private:
 	Person* A;
 	Person* B;
@@ -22,24 +20,14 @@ private:
 	double min;
 	int length;
 	int tick;
-	double locA;
-	double locB;
 	Semaphore *semA;
 	Semaphore *semB;
-	int count;
-	bool control;
 
 	//threads
-	void turnA(double time);
-	void turnB(double time);
+	void fred(double time1, double time2);
+	void wilma(double time1, double time2);
 	
+	void init();
 	double calculate(Person *person, double c);
-	void motion(Person* person, double t);
-	void movement(Person* person, double t);
-	void output();
-
-	void takeTurns(double time1, double time2);
-	void fred(double t, bool c);
-	void wilma(double t, bool c);
 	double up(Person* person, double t, bool c);
 };

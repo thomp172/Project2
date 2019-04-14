@@ -17,80 +17,86 @@ Seesaw::Seesaw(Person* theA, Person* theB, double theMax, double theMin)
 	min = theMin;
 	init();
 }
+Seesaw::~Seesaw()
+{
+	delete A;
+	delete B;
+	delete semA;
+	delete semB;
+}
+
 void Seesaw::init()
 {
 	cout << "begin simulation" << endl;
 	//semaphore
 	semA = new Semaphore(1);
 	semB = new Semaphore();
-	length = max - min;
-	tick = 1;
-	count = 0;
-	control = true;
-	int time1 = calculate(A, min);
-	int time2 = calculate(B,max);
-	count = (time1 + time2) * 10;
-	//thread creation
-	locA = min;
-	locB = max;
-	for (int i=0; i<10; i++)//repeat 10 times
-	{
-		/*thread thrA = thread(&Seesaw::turnA, this, time1);
-		thread thrB = thread(&Seesaw::turnB, this, time2);
-		thrA.join();
-		thrB.join();*/
-		takeTurns(time1, time2);
-	}
+	tick = 0;
+	double h = max - min;
+	length = (int) h;
+	double time1 = calculate(A, min);
+	double time2 = calculate(B,max);
+	thread thrA = thread(&Seesaw::fred, this, time1, time2);
+	thread thrB = thread(&Seesaw::wilma, this, time1, time2);
+	thrA.join();
+	thrB.join();
 }
 
-void Seesaw::takeTurns(double time1, double time2)
+void Seesaw::fred(double time1, double time2)
 {
-	cout << A->getName() << " pushes off the ground" << endl;
-	for (int j = 1; j <= time1; j++)
+	double loc;
+	int j, k,m;
+	for (m = 0; m < 10; m++)
 	{
-		thread thrA = thread(&Seesaw::fred, this, j, true);
-		thread thrB = thread(&Seesaw::wilma, this, j, false);
-		thrA.join();
-		thrB.join();
-	}
-	cout << B->getName() << " pushes off the ground" << endl;
-	for (int k = 1; k <= time2; k++)
-	{
-		thread thrA = thread(&Seesaw::fred, this, k, false);
-		thread thrB = thread(&Seesaw::wilma, this, k, true);
-		thrA.join();
-		thrB.join();
+		
+		for (j = 0; j < time1; j++)
+		{
+			loc = up(A, j, true);
+			semA->wait();
+			cout << A->getName() << "(d=" << loc << ",t=" << tick << ")" << endl;
+			semB->signal();
+		}
+		for (k = 0; k < time2; k++)
+		{
+			loc = up(B, k, false);
+			semA->wait();
+			cout << A->getName() << "(d=" << loc << ",t=" << tick << ")" << endl;
+			semB->signal();
+		}
 	}
 }
-void Seesaw::fred(double t, bool c)
+void Seesaw::wilma(double time1, double time2)
 {
-	semA->wait();
 	double loc;
-	if (c == true)
-		loc = up(A, t, c);
-	else
-		loc = up(B, t, c);
-	cout << A->getName() << "(d=" << loc << ",t=" << tick << ")" << endl;
-	semB->signal();
-}
-void Seesaw::wilma(double t, bool c)
-{
-	semB->wait();
-	double loc;
-	if (c == false)
-		loc = up(A, t, c);
-	else
-		loc = up(B, t, c);
-	cout << B->getName() << "(d=" << loc << ",t=" << tick << ")" << endl;
-	Sleep(1000);
-	tick++;
-	semA->signal();
+	int j, k, m;
+	for (m = 0; m < 10; m++)
+	{
+		for (j = 0; j < time1; j++)
+		{
+			loc = up(A, j, false);
+			semB->wait();
+			cout << B->getName() << "(d=" << loc << ",t=" << tick << ")" << endl;
+			Sleep(1000);
+			tick++;
+			semA->signal();
+		}
+		for (k = 0; k < time2; k++)
+		{
+			loc = up(B, k, true);
+			semB->wait();
+			cout << B->getName() << "(d=" << loc << ",t=" << tick << ")" << endl;
+			Sleep(1000);
+			tick++;
+			semA->signal();
+		}
+	}
 }
 double Seesaw::up(Person* person, double t, bool c)
 {
 	int round;
+	double loc;
 	double speed = person->getSpeed();
-	if ((c == false))
+	if (c == false)
 	{
 		speed = (-1) * speed;
 	}
@@ -101,88 +107,15 @@ double Seesaw::up(Person* person, double t, bool c)
 		dis = abs(round % length);
 	}
 
-	locA = dis + min;
+	loc = dis + min;
 	if (c == false)  //falling
-		locA = max - dis;
-	//locB = max - dis;
-	//cout << person->getName() << "(d=" << locA << ",t=" << tick << ")" << endl;
-	return locA;
-	//output();
+		loc = max - dis;
+	return loc;
 }
 
 double Seesaw::calculate(Person *person, double c)
 {
 	double time;
 	time = length/person->getSpeed();
-	//person reaches max height at timeFinal
-	cout << person->getName() << " reaches max height at " << time << " seconds." << endl;
 	return time;
-}
-
-//threads
-void Seesaw::turnA(double time)
-{
-	semA->wait();
-	cout << A->getName() << " pushes off the ground" << endl;
-	for (int j = 1; j <= time; j++)
-	{
-		movement(A, j);
-	}
-	semB->signal();
-}
-void Seesaw::turnB(double time)
-{
-	semB->wait();
-	cout << B->getName() << " pushes off the ground" << endl;
-	for (int j = 1; j <= time; j++)
-	{
-		movement(B, j);
-	}
-	semA->signal();
-}
-
-void Seesaw::motion(Person *person, double t)
-{
-	int round;
-	double dis = person->getSpeed() * t;
-	if ((dis < 0) && (dis > length))
-	{
-		round = (int)dis;
-		dis = abs(round % length);
-	}
-
-	locA = dis + min;
-	locB = max - dis;
-	if (control == true)
-	{
-		cout << A->getName() << "(d=" << locA << ",t=" << tick << ")" << endl;
-	}
-	else if (control == false)
-	{
-		cout << B->getName() << "(d=" << locB << ",t=" << tick << ")" << endl;
-	}
-	else
-	{
-		cout << "ERROR" << endl;
-		exit(0);
-	}
-	//output();
-}
-
-void Seesaw::movement(Person* person, double t)
-{
-	Sleep(1000);
-	control = true;
-	motion(person, t); //output Person A location based on Person person speed
-	control = false;
-	motion(person, t); //output Person B location based on Person person speed
-	tick++;
-}
-
-
-void Seesaw::output()
-{
-	cout << A->getName() << "(d=" << locA << ",t=" << tick << ")" << endl;
-	cout << B->getName() << "(d=" << locB << ",t=" << tick << ")" << endl;
-	tick++;
 }
