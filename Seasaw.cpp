@@ -62,6 +62,10 @@ void Seesaw::fred(double time1, double time2) //Person A
 			semB->signal();
 		}
 	}
+	loc = up(B, k, false); //A not in power
+	semA->wait();
+	cout << A->getName() << "(d=" << loc << ",t=" << tick << ")" << endl;
+	semB->signal();
 }
 void Seesaw::wilma(double time1, double time2) //Person B
 {
@@ -88,6 +92,11 @@ void Seesaw::wilma(double time1, double time2) //Person B
 			semA->signal();
 		}
 	}
+	loc = up(B, k, true); //B in power
+	semB->wait();
+	cout << B->getName() << "(d=" << loc << ",t=" << tick << ")" << endl;
+	Sleep(1000);
+	semA->signal();
 }
 double Seesaw::up(Person* person, double t, bool c)
 {
