@@ -1,4 +1,3 @@
-//#include "Semaphore.h"
 #include "pch.h"
 
 Semaphore::Semaphore()

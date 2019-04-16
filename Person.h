@@ -11,6 +11,7 @@ public:
 	void setSpeed(double speed);
 	string getName();
 	double getSpeed();
+	string toString();
 private:
 	string name;
 	double speed; //ft/sec

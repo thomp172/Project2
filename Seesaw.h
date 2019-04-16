@@ -13,6 +13,8 @@ public:
 	Seesaw(); // default constructor
 	Seesaw(Person* theA, Person* theB, double theMax, double theMin);
 	~Seesaw();
+	thread thrA;
+	thread thrB;
 private:
 	Person* A;
 	Person* B;
@@ -28,6 +30,5 @@ private:
 	void wilma(double time1, double time2);
 	
 	void init();
-	double calculate(Person *person, double c);
 	double up(Person* person, double t, bool c);
 };

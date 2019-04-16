@@ -1,4 +1,3 @@
-//#include "Person.h"
 #include "pch.h"
 
 Person::Person()
@@ -27,4 +26,9 @@ string Person::getName()
 double Person::getSpeed()
 {
 	return speed;
+}
+
+string Person::toString()
+{
+	return (name + ": " + to_string(speed) + " ft/s");
 }
